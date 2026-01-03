@@ -1,6 +1,6 @@
 This project is named as cyber shield is a application developed using Flutter, aimed at protecting sensitive user data through a password-based locking mechanism .
 
-We also introduced a DashBoard which Displays the device information such as name and the android version along with it fethces the IP of that device and lastly we have displayed some prewrriten security that if followed can help you in lot's of kind of ways
+We also introduced a DashBoard which Displays the device information such as its name and the android version along with it fethces the IP address of that device and lastly we have also displayed some prewrriten security tips  that if followed can help you in lot's of kinds  of ways
 
 The  core idea behind the project was to create a simple yet effective way to store private notes securely on a mobile device.
 
