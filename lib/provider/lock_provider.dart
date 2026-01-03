@@ -1,7 +1,8 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 class LockProvider extends ChangeNotifier {
   bool _isUnlocked = false;
+
   bool get isUnlocked => _isUnlocked;
 
   void unlock() {

@@ -11,11 +11,12 @@ import 'theme/cyber_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Hive and boxes
+  // Initialize Hive
   await Hive.initFlutter();
-  await Hive.openBox('vault');
-  await Hive.openBox('passwordBox');
-  await Hive.openBox('settingsBox');
+
+  // REQUIRED BOXES
+  await Hive.openBox('vault'); // vault notes
+  await Hive.openBox('auth');  // password storage
 
   runApp(const MyApp());
 }
@@ -49,20 +50,27 @@ class _HomeNavigationState extends State<HomeNavigation> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> _screens = [
-      const Dashboard(),
-      Builder(
-        builder: (context) {
-          final isUnlocked = context.watch<LockProvider>().isUnlocked;
-          return isUnlocked ? const Vault() : const Gatekeeper();
-        },
-      ),
+    // Check if Vault is unlocked
+    final isUnlocked = context.watch<LockProvider>().isUnlocked;
+
+    // Screens for navigation
+    final List<Widget> screens = [
+      const Dashboard(),                     // Always accessible
+      isUnlocked ? const Vault() : const Gatekeeper(), // Protected
     ];
 
     return Scaffold(
-      body: _screens[_currentIndex],
+      body: screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
+        backgroundColor: Colors.grey.shade900, // Dark theme
+        selectedItemColor: AppTheme.accent,
+        unselectedItemColor: Colors.white70,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard),
@@ -73,11 +81,6 @@ class _HomeNavigationState extends State<HomeNavigation> {
             label: "Vault",
           ),
         ],
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
       ),
     );
   }

@@ -1,6 +1,8 @@
-This project is named as cyber shield is a application developed using Flutter, aimed at protecting sensitive user data through a password-based locking mechanism. 
+This project is named as cyber shield is a application developed using Flutter, aimed at protecting sensitive user data through a password-based locking mechanism .
 
-The idea behind the project was to create a simple yet effective way to store private notes securely on a mobile device.
+We also introduced a DashBoard which Displays the device information such as name and the android version along with it fethces the IP of that device and lastly we have displayed some prewrriten security that if followed can help you in lot's of kind of ways
+
+The  core idea behind the project was to create a simple yet effective way to store private notes securely on a mobile device.
 
 We started the project by setting up a Flutter application with a clean structure, separating screens, services, providers, and themes. 
 
@@ -30,6 +32,6 @@ The UI automatically switches between the Gatekeeper (lock screen) and the Vault
 
 The application follows a dark cyber-style theme with blue accents, improving readability and giving it a modern security-focused appearance. 
 
-The UI is simple, clean, and user-friendly.
+The UI is simple, clean, and user-friendly.  
 
 Overall, the best part of this project is its secure-by-design approach, combining encryption, local storage, and state management to protect user data effectively. It demonstrates practical knowledge of Flutter, local storage, encryption, and secure application design, making it a strong real-world project suitable for internships and learning purposes.

@@ -1,25 +1,18 @@
-import 'package:encrypt/encrypt.dart' as encrypt;
+import 'dart:convert';
 
 class EncryptionService {
-  // ✅ SAME KEY EVERY TIME
-  static final _key =
-  encrypt.Key.fromUtf8('12345678901234567890123456789012');
-  static final _iv = encrypt.IV.fromLength(16);
-
-  final _encrypter = encrypt.Encrypter(
-    encrypt.AES(_key, mode: encrypt.AESMode.cbc),
-  );
+  static const _key = "CYBER_SHIELD_SECRET_KEY";
 
   String encryptText(String text) {
-    return _encrypter.encrypt(text, iv: _iv).base64;
+    final bytes = utf8.encode(text + _key);
+    return base64Encode(bytes);
   }
 
   String decryptText(String encrypted) {
     try {
-      if (encrypted == null || encrypted.isEmpty) return "";
-      return _encrypter.decrypt64(encrypted, iv: _iv);
+      final decoded = utf8.decode(base64Decode(encrypted));
+      return decoded.replaceAll(_key, "");
     } catch (_) {
-
       return "";
     }
   }

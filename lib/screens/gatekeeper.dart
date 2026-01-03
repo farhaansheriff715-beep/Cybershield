@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
+
 import '../provider/lock_provider.dart';
 import '../services/encryption_service.dart';
+import 'vault.dart';
 
 class Gatekeeper extends StatefulWidget {
   const Gatekeeper({super.key});
@@ -12,79 +14,127 @@ class Gatekeeper extends StatefulWidget {
 }
 
 class _GatekeeperState extends State<Gatekeeper> {
-  final TextEditingController _controller = TextEditingController();
+  final TextEditingController controller = TextEditingController();
   final EncryptionService crypto = EncryptionService();
-
-  late Box passwordBox;
+  late Box authBox;
 
   @override
   void initState() {
     super.initState();
-    passwordBox = Hive.box('passwordBox');
-
-    // Always lock vault on app start
-    context.read<LockProvider>().lock();
+    authBox = Hive.box('auth');
   }
 
   void handlePassword() {
-    String input = _controller.text.trim();
-    if (input.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Password cannot be empty")),
-      );
-      return;
-    }
+    final input = controller.text.trim();
+    if (input.isEmpty) return;
 
-    String storedEncrypted = passwordBox.get('vaultPassword') ?? "";
-    String stored = crypto.decryptText(storedEncrypted);
-
-    // First time or corrupted password
-    if (stored.isEmpty) {
-      passwordBox.put('vaultPassword', crypto.encryptText(input));
+    if (!authBox.containsKey('vaultPassword')) {
+      authBox.put('vaultPassword', crypto.encryptText(input));
       context.read<LockProvider>().unlock();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Password set & vault unlocked")),
+        const SnackBar(content: Text("Password set! Vault unlocked.")),
       );
     } else {
-      // Compare input with decrypted password
-      if (input == stored) {
+      final encrypted = authBox.get('vaultPassword');
+      final saved = crypto.decryptText(encrypted);
+
+      if (saved == input) {
         context.read<LockProvider>().unlock();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Vault unlocked")),
+          const SnackBar(content: Text("Vault unlocked.")),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Wrong password")),
+          const SnackBar(content: Text("Wrong password!")),
         );
       }
     }
 
-    _controller.clear();
+    controller.clear();
   }
 
   @override
   Widget build(BuildContext context) {
-    bool passwordSet = crypto.decryptText(passwordBox.get('vaultPassword') ?? '').isNotEmpty;
+    final isUnlocked = context.watch<LockProvider>().isUnlocked;
+    final hasPassword = authBox.containsKey('vaultPassword');
 
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          TextField(
-            controller: _controller,
-            obscureText: true,
-            decoration: InputDecoration(
-              labelText: passwordSet ? "Enter Password" : "Set Vault Password",
-              border: const OutlineInputBorder(),
+    if (isUnlocked) return const Vault();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Cyber Shield Vault "),
+        centerTitle: true,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blueAccent, Colors.deepPurpleAccent],
             ),
           ),
-          const SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: handlePassword,
-            child: Text(passwordSet ? "Unlock Vault" : "Set & Unlock Vault"),
+        ),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                hasPassword ? "Enter Password" : "Set Password",
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueAccent,
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: controller,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: "Password",
+                  labelStyle: const TextStyle(color: Colors.blueAccent),
+                  filled: true,
+                  fillColor: Colors.grey[900],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: Colors.blueAccent),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: Colors.blueAccent),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide:
+                    const BorderSide(color: Colors.blueAccent, width: 2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: handlePassword,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    backgroundColor: Colors.blueAccent,
+                    foregroundColor: Colors.black,
+                  ),
+                  child: Text(
+                    hasPassword ? "Unlock Vault" : "Set Password",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
